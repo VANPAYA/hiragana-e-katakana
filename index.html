@@ -1,208 +1,590 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Hiragana & Katakana | Estudo Eficiente</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kana Trainer</title>
   <style>
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      margin: 0;
-      background: #0f172a;
-      color: #e5e7eb;
+    :root{
+      --bg0:#060812;
+      --bg1:#0b1224;
+      --card:rgba(255,255,255,.06);
+      --text:#e8eefc;
+      --muted:rgba(232,238,252,.62);
+      --ok:#22c55e;
+      --bad:#ef4444;
+      --accent:#38bdf8;
+      --shadow:0 18px 60px rgba(0,0,0,.55);
+      --radius:18px;
     }
-    header {
-      background: #020617;
-      padding: 20px;
-      text-align: center;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(56,189,248,.15), transparent 55%),
+        radial-gradient(900px 600px at 80% 30%, rgba(34,197,94,.12), transparent 55%),
+        radial-gradient(900px 700px at 50% 90%, rgba(239,68,68,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow:hidden;
     }
-    header h1 {
-      margin: 0;
-      font-size: 28px;
+
+    .hidden{display:none}
+
+    .topbar{
+      position:fixed; inset:14px 14px auto 14px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      padding:10px 12px;
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:999px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
-    nav {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 10px;
-      flex-wrap: wrap;
+    .left, .right{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+
+    select, button{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:700;
+      outline:none;
     }
-    nav button {
-      background: #1e293b;
-      border: none;
-      padding: 10px 16px;
-      color: #fff;
-      cursor: pointer;
-      border-radius: 6px;
+    select{appearance:none; padding-right:34px}
+    .selectWrap{position:relative}
+    .selectWrap:after{
+      content:"▾";
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      color:var(--muted);
+      pointer-events:none;
+      font-size:12px;
     }
-    nav button.active {
-      background: #38bdf8;
-      color: #020617;
-      font-weight: bold;
+    button{cursor:pointer}
+    button:hover{background:rgba(255,255,255,.12)}
+    button:active{transform:translateY(1px)}
+
+    .pill{
+      display:flex; align-items:center; gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      font-weight:800;
+      color:var(--muted);
     }
-    main {
-      max-width: 1100px;
-      margin: auto;
-      padding: 20px;
+    .dot{width:8px; height:8px; border-radius:999px; background:rgba(56,189,248,.85)}
+
+    .center{
+      height:100%;
+      display:grid;
+      place-items:center;
+      padding:78px 14px 22px;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 12px;
+
+    .stage{
+      width:min(760px, 100%);
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding:22px;
     }
-    .card {
-      background: #020617;
-      border-radius: 8px;
-      padding: 15px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s, background 0.2s;
+
+    .prompt{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:210px;
+      border-radius:var(--radius);
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.08);
+      position:relative;
+      overflow:hidden;
     }
-    .card:hover {
-      transform: scale(1.05);
-      background: #1e293b;
+
+    .kana{
+      font-size:118px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:.02em;
+      text-shadow: 0 0 28px rgba(56,189,248,.16);
+      user-select:none;
     }
-    .kana {
-      font-size: 36px;
-      font-weight: bold;
+
+    .sub{
+      position:absolute;
+      bottom:14px;
+      color:var(--muted);
+      font-weight:800;
+      font-size:14px;
+      opacity:0;
+      transform:translateY(6px);
+      transition: opacity .16s ease, transform .16s ease;
     }
-    .romaji {
-      margin-top: 5px;
-      font-size: 14px;
-      opacity: 0.8;
+    .sub.show{opacity:1; transform:translateY(0)}
+
+    .controls{
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      align-items:center;
     }
-    .hidden {
-      display: none;
+
+    .input{
+      flex:1;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:12px 14px;
     }
-    .quiz {
-      text-align: center;
+
+    input{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:.02em;
     }
-    .quiz h2 {
-      font-size: 48px;
-      margin-bottom: 20px;
+
+    .hint{
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      white-space:nowrap;
+      user-select:none;
     }
-    .quiz input {
-      padding: 10px;
-      font-size: 18px;
-      border-radius: 6px;
-      border: none;
-      width: 200px;
-      text-align: center;
+
+    .okBtn{
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(56,189,248,.22);
+      border:1px solid rgba(56,189,248,.35);
+      font-weight:900;
     }
-    .quiz button {
-      margin-left: 10px;
-      padding: 10px 16px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #38bdf8;
-      color: #020617;
-      font-weight: bold;
+
+    .flash{
+      position:fixed; inset:0;
+      pointer-events:none;
+      opacity:0;
+      transition: opacity .12s ease;
     }
-    .feedback {
-      margin-top: 15px;
-      font-size: 18px;
+    .flash.ok{background:rgba(34,197,94,.14)}
+    .flash.bad{background:rgba(239,68,68,.14)}
+    .flash.on{opacity:1}
+
+    .mini{
+      margin-top:10px;
+      display:flex;
+      justify-content:space-between;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      opacity:.92;
+      user-select:none;
     }
-    footer {
-      text-align: center;
-      padding: 15px;
-      background: #020617;
-      opacity: 0.7;
-      font-size: 14px;
+
+    .tinyBtn{
+      padding:8px 10px;
+      border-radius:12px;
+      min-width:44px;
+      display:grid;
+      place-items:center;
+    }
+
+    .done{
+      text-align:center;
+      padding:34px 12px 12px;
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:.02em;
+    }
+
+    @media (max-width:520px){
+      .kana{font-size:96px}
+      .prompt{height:190px}
+      .topbar{inset:12px 12px auto 12px}
+      .stage{padding:16px}
+      input{font-size:17px}
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Hiragana & Katakana — Método Eficiente</h1>
-    <nav>
-      <button class="active" onclick="showSection('study')">Estudo Ativo</button>
-      <button onclick="showSection('quiz')">Quiz (Active Recall)</button>
-      <button onclick="showSection('about')">Método</button>
-    </nav>
-  </header>
+  <div class="topbar">
+    <div class="left">
+      <div class="selectWrap">
+        <select id="setSelect" aria-label="Modo">
+          <option value="both">Hira + Kata</option>
+          <option value="hira">Hiragana</option>
+          <option value="kata">Katakana</option>
+        </select>
+      </div>
+      <button id="swapBtn" class="tinyBtn" title="Trocar direção">⇄</button>
+      <button id="audioBtn" class="tinyBtn" title="Áudio">🔈</button>
+    </div>
+    <div class="right">
+      <div class="pill" title="Prontos agora">
+        <span class="dot"></span>
+        <span id="due">0</span>
+      </div>
+      <button id="resetBtn" class="tinyBtn" title="Reset">↺</button>
+    </div>
+  </div>
 
-  <main>
-    <!-- ESTUDO -->
-    <section id="study">
-      <h2>Estudo por Reconhecimento Visual</h2>
-      <p>Clique no caractere para testar se você lembra a leitura (técnica de <b>active recall</b>).</p>
-      <div class="grid" id="kanaGrid"></div>
-    </section>
+  <div class="center">
+    <div class="stage">
+      <div class="prompt" id="promptBox">
+        <div class="kana" id="prompt">あ</div>
+        <div class="sub" id="reveal">a</div>
+      </div>
 
-    <!-- QUIZ -->
-    <section id="quiz" class="hidden quiz">
-      <h2 id="quizKana">あ</h2>
-      <input type="text" id="answer" placeholder="romaji" />
-      <button onclick="checkAnswer()">Confirmar</button>
-      <div class="feedback" id="feedback"></div>
-    </section>
+      <div class="controls">
+        <div class="input">
+          <input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="romaji" />
+          <div class="hint">ENTER • SPACE</div>
+        </div>
+        <button id="okBtn" class="okBtn">OK</button>
+      </div>
 
-    <!-- MÉTODO -->
-    <section id="about" class="hidden">
-      <h2>Métodos Utilizados</h2>
-      <ul>
-        <li><b>Active Recall</b> – você tenta lembrar antes de ver a resposta.</li>
-        <li><b>Spaced Repetition</b> – erros aparecem com mais frequência.</li>
-        <li><b>Chunking</b> – estudo organizado por padrões fonéticos.</li>
-        <li><b>Dual Coding</b> – forma visual + som mental.</li>
-        <li><b>Feedback Imediato</b> – correção instantânea.</li>
-      </ul>
-      <p>Esses métodos são os mesmos usados em sistemas como Anki, WaniKani e estudos de neuroaprendizagem.</p>
-    </section>
-  </main>
+      <div class="mini">
+        <span id="stat">—</span>
+        <span id="mode">kana→romaji</span>
+      </div>
 
-  <footer>
-    Hiragana & Katakana Study © 2026
-  </footer>
+      <div class="done hidden" id="done">feito por agora</div>
+    </div>
+  </div>
 
-  <script>
-    const kana = [
-      { k: 'あ', r: 'a' }, { k: 'い', r: 'i' }, { k: 'う', r: 'u' }, { k: 'え', r: 'e' }, { k: 'お', r: 'o' },
-      { k: 'か', r: 'ka' }, { k: 'き', r: 'ki' }, { k: 'く', r: 'ku' }, { k: 'け', r: 'ke' }, { k: 'こ', r: 'ko' },
-      { k: 'さ', r: 'sa' }, { k: 'し', r: 'shi' }, { k: 'す', r: 'su' }, { k: 'せ', r: 'se' }, { k: 'そ', r: 'so' },
-      { k: 'た', r: 'ta' }, { k: 'ち', r: 'chi' }, { k: 'つ', r: 'tsu' }, { k: 'て', r: 'te' }, { k: 'と', r: 'to' },
-      { k: 'な', r: 'na' }, { k: 'に', r: 'ni' }, { k: 'ぬ', r: 'nu' }, { k: 'ね', r: 'ne' }, { k: 'の', r: 'no' }
-    ];
+  <div class="flash ok" id="flashOk"></div>
+  <div class="flash bad" id="flashBad"></div>
 
-    const grid = document.getElementById('kanaGrid');
-    kana.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = `<div class="kana">${item.k}</div><div class="romaji hidden">${item.r}</div>`;
-      div.onclick = () => div.querySelector('.romaji').classList.toggle('hidden');
-      grid.appendChild(div);
-    });
+<script>
+  // Imersivo + eficiente: Active Recall + SRS com passos curtos (tipo Anki) + persistência (localStorage)
 
-    let current;
-    function newQuiz() {
-      current = kana[Math.floor(Math.random() * kana.length)];
-      document.getElementById('quizKana').innerText = current.k;
-      document.getElementById('answer').value = '';
-      document.getElementById('feedback').innerText = '';
+  const HIRA = [
+    ['あ','a',[]],['い','i',[]],['う','u',[]],['え','e',[]],['お','o',[]],
+    ['か','ka',[]],['き','ki',[]],['く','ku',[]],['け','ke',[]],['こ','ko',[]],
+    ['さ','sa',[]],['し','shi',['si']],['す','su',[]],['せ','se',[]],['そ','so',[]],
+    ['た','ta',[]],['ち','chi',['ti']],['つ','tsu',['tu']],['て','te',[]],['と','to',[]],
+    ['な','na',[]],['に','ni',[]],['ぬ','nu',[]],['ね','ne',[]],['の','no',[]],
+    ['は','ha',[]],['ひ','hi',[]],['ふ','fu',['hu']],['へ','he',[]],['ほ','ho',[]],
+    ['ま','ma',[]],['み','mi',[]],['む','mu',[]],['め','me',[]],['も','mo',[]],
+    ['や','ya',[]],['ゆ','yu',[]],['よ','yo',[]],
+    ['ら','ra',[]],['り','ri',[]],['る','ru',[]],['れ','re',[]],['ろ','ro',[]],
+    ['わ','wa',[]],['を','o',['wo']],['ん','n',['nn']],
+
+    ['が','ga',[]],['ぎ','gi',[]],['ぐ','gu',[]],['げ','ge',[]],['ご','go',[]],
+    ['ざ','za',[]],['じ','ji',['zi']],['ず','zu',[]],['ぜ','ze',[]],['ぞ','zo',[]],
+    ['だ','da',[]],['ぢ','ji',['di','zi']],['づ','zu',['du']],['で','de',[]],['ど','do',[]],
+    ['ば','ba',[]],['び','bi',[]],['ぶ','bu',[]],['べ','be',[]],['ぼ','bo',[]],
+    ['ぱ','pa',[]],['ぴ','pi',[]],['ぷ','pu',[]],['ぺ','pe',[]],['ぽ','po',[]],
+
+    ['きゃ','kya',[]],['きゅ','kyu',[]],['きょ','kyo',[]],
+    ['しゃ','sha',['sya']],['しゅ','shu',['syu']],['しょ','sho',['syo']],
+    ['ちゃ','cha',['tya']],['ちゅ','chu',['tyu']],['ちょ','cho',['tyo']],
+    ['にゃ','nya',[]],['にゅ','nyu',[]],['にょ','nyo',[]],
+    ['ひゃ','hya',[]],['ひゅ','hyu',[]],['ひょ','hyo',[]],
+    ['みゃ','mya',[]],['みゅ','myu',[]],['みょ','myo',[]],
+    ['りゃ','rya',[]],['りゅ','ryu',[]],['りょ','ryo',[]],
+    ['ぎゃ','gya',[]],['ぎゅ','gyu',[]],['ぎょ','gyo',[]],
+    ['じゃ','ja',['jya','zya']],['じゅ','ju',['jyu','zyu']],['じょ','jo',['jyo','zyo']],
+    ['びゃ','bya',[]],['びゅ','byu',[]],['びょ','byo',[]],
+    ['ぴゃ','pya',[]],['ぴゅ','pyu',[]],['ぴょ','pyo',[]],
+
+    ['っ','(sokuon)',['xtsu','ltu']]
+  ];
+
+  const KATA = [
+    ['ア','a',[]],['イ','i',[]],['ウ','u',[]],['エ','e',[]],['オ','o',[]],
+    ['カ','ka',[]],['キ','ki',[]],['ク','ku',[]],['ケ','ke',[]],['コ','ko',[]],
+    ['サ','sa',[]],['シ','shi',['si']],['ス','su',[]],['セ','se',[]],['ソ','so',[]],
+    ['タ','ta',[]],['チ','chi',['ti']],['ツ','tsu',['tu']],['テ','te',[]],['ト','to',[]],
+    ['ナ','na',[]],['ニ','ni',[]],['ヌ','nu',[]],['ネ','ne',[]],['ノ','no',[]],
+    ['ハ','ha',[]],['ヒ','hi',[]],['フ','fu',['hu']],['ヘ','he',[]],['ホ','ho',[]],
+    ['マ','ma',[]],['ミ','mi',[]],['ム','mu',[]],['メ','me',[]],['モ','mo',[]],
+    ['ヤ','ya',[]],['ユ','yu',[]],['ヨ','yo',[]],
+    ['ラ','ra',[]],['リ','ri',[]],['ル','ru',[]],['レ','re',[]],['ロ','ro',[]],
+    ['ワ','wa',[]],['ヲ','o',['wo']],['ン','n',['nn']],
+
+    ['ガ','ga',[]],['ギ','gi',[]],['グ','gu',[]],['ゲ','ge',[]],['ゴ','go',[]],
+    ['ザ','za',[]],['ジ','ji',['zi']],['ズ','zu',[]],['ゼ','ze',[]],['ゾ','zo',[]],
+    ['ダ','da',[]],['ヂ','ji',['di','zi']],['ヅ','zu',['du']],['デ','de',[]],['ド','do',[]],
+    ['バ','ba',[]],['ビ','bi',[]],['ブ','bu',[]],['ベ','be',[]],['ボ','bo',[]],
+    ['パ','pa',[]],['ピ','pi',[]],['プ','pu',[]],['ペ','pe',[]],['ポ','po',[]],
+
+    ['キャ','kya',[]],['キュ','kyu',[]],['キョ','kyo',[]],
+    ['シャ','sha',['sya']],['シュ','shu',['syu']],['ショ','sho',['syo']],
+    ['チャ','cha',['tya']],['チュ','chu',['tyu']],['チョ','cho',['tyo']],
+    ['ニャ','nya',[]],['ニュ','nyu',[]],['ニョ','nyo',[]],
+    ['ヒャ','hya',[]],['ヒュ','hyu',[]],['ヒョ','hyo',[]],
+    ['ミャ','mya',[]],['ミュ','myu',[]],['ミョ','myo',[]],
+    ['リャ','rya',[]],['リュ','ryu',[]],['リョ','ryo',[]],
+    ['ギャ','gya',[]],['ギュ','gyu',[]],['ギョ','gyo',[]],
+    ['ジャ','ja',['jya','zya']],['ジュ','ju',['jyu','zyu']],['ジョ','jo',['jyo','zyo']],
+    ['ビャ','bya',[]],['ビュ','byu',[]],['ビョ','byo',[]],
+    ['ピャ','pya',[]],['ピュ','pyu',[]],['ピョ','pyo',[]],
+
+    ['ッ','(sokuon)',['xtsu','ltu']]
+  ];
+
+  const KEY = 'kana_trainer_v3';
+  const LEARN_STEPS_MIN = [0.15, 1, 6, 25];
+
+  const elPrompt = document.getElementById('prompt');
+  const elReveal = document.getElementById('reveal');
+  const elAnswer = document.getElementById('answer');
+  const elOk = document.getElementById('okBtn');
+  const elDue = document.getElementById('due');
+  const elStat = document.getElementById('stat');
+  const elMode = document.getElementById('mode');
+  const elSet = document.getElementById('setSelect');
+  const elSwap = document.getElementById('swapBtn');
+  const elAudio = document.getElementById('audioBtn');
+  const elReset = document.getElementById('resetBtn');
+  const elDone = document.getElementById('done');
+  const flashOk = document.getElementById('flashOk');
+  const flashBad = document.getElementById('flashBad');
+
+  function now(){ return Date.now(); }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+
+  function makeDeck(list){
+    return list.map(([k,r,alt]) => ({
+      id:k, k, r, alt,
+      ef:2.5, reps:0, intervalDays:0,
+      phase:'new', step:0,
+      due: now()
+    }));
+  }
+
+  function loadState(){
+    try{ const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; }
+    catch{ return null; }
+  }
+  function saveState(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
+
+  function normalize(s){
+    s = (s || '').toLowerCase().trim();
+    let out = '';
+    for(let i=0;i<s.length;i++){
+      const ch = s[i];
+      if(ch===' ' || ch==='-' || ch==='	' || ch==='
+' || ch==='
+') continue;
+      out += ch;
+    }
+    return out;
+  }
+
+  let state = loadState();
+  if(!state){
+    state = {
+      set:'both',
+      dir:'k2r',
+      audio:false,
+      deck:{ hira: makeDeck(HIRA), kata: makeDeck(KATA) },
+      stats:{ reviews:0, correct:0, streak:0 }
+    };
+    saveState(state);
+  }
+
+  elSet.value = state.set;
+  elMode.textContent = state.dir === 'k2r' ? 'kana→romaji' : 'romaji→kana';
+  elAudio.textContent = state.audio ? '🔊' : '🔈';
+
+  function pool(){
+    if(state.set==='hira') return state.deck.hira;
+    if(state.set==='kata') return state.deck.kata;
+    return state.deck.hira.concat(state.deck.kata);
+  }
+
+  function dueCount(){
+    const t = now();
+    let c = 0;
+    for(const x of pool()) if(x.due <= t) c++;
+    return c;
+  }
+
+  function pickNext(){
+    const t = now();
+    const p = pool();
+    const due = [];
+    for(const x of p) if(x.due <= t) due.push(x);
+    due.sort((a,b)=>a.due-b.due);
+
+    if(due.length===0){
+      const news = p.filter(x=>x.phase==='new');
+      if(news.length===0) return null;
+      return news[Math.floor(Math.random()*news.length)];
     }
 
-    function checkAnswer() {
-      const ans = document.getElementById('answer').value.toLowerCase();
-      const fb = document.getElementById('feedback');
-      if (ans === current.r) {
-        fb.innerText = '✅ Correto!';
-        fb.style.color = '#22c55e';
-        setTimeout(newQuiz, 800);
-      } else {
-        fb.innerText = `❌ Errado. Correto: ${current.r}`;
-        fb.style.color = '#ef4444';
+    const head = due.slice(0,8);
+    return head[Math.floor(Math.random()*head.length)];
+  }
+
+  let card = null;
+
+  function speakKana(text){
+    try{
+      if(!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP';
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+    }catch{}
+  }
+
+  function setPrompt(c){
+    card = c;
+    elReveal.classList.remove('show');
+
+    if(state.dir==='k2r'){
+      elPrompt.textContent = c.k;
+      elReveal.textContent = c.r;
+      elAnswer.placeholder = 'romaji';
+    }else{
+      elPrompt.textContent = c.r;
+      elReveal.textContent = c.k;
+      elAnswer.placeholder = 'kana (cole)';
+    }
+
+    elAnswer.value = '';
+    elAnswer.focus();
+
+    elDue.textContent = String(dueCount());
+
+    const acc = state.stats.reviews ? Math.round((state.stats.correct/state.stats.reviews)*100) : 0;
+    elStat.textContent = String(state.stats.streak) + ' streak • ' + String(acc) + '%';
+
+    elDone.classList.add('hidden');
+
+    if(state.audio && state.dir==='k2r') speakKana(c.k);
+  }
+
+  function showDone(){
+    elDone.classList.remove('hidden');
+    elPrompt.textContent = '—';
+    elReveal.textContent = '';
+    elAnswer.value = '';
+    elDue.textContent = '0';
+  }
+
+  function acceptable(c){
+    const base = [c.r].concat(c.alt || []).map(normalize);
+    if(c.r==='(sokuon)') return ['(sokuon)','xtsu','ltu','っ','ッ'].map(normalize);
+    return base;
+  }
+
+  function correct(input,c){
+    const ans = normalize(input);
+    if(!ans) return false;
+    if(state.dir==='k2r') return acceptable(c).includes(ans);
+    return normalize(c.k)===ans;
+  }
+
+  function flash(kind){
+    const el = kind==='ok' ? flashOk : flashBad;
+    el.classList.add('on');
+    setTimeout(()=>el.classList.remove('on'), 110);
+  }
+
+  function schedule(c, ok){
+    const t = now();
+    state.stats.reviews++;
+
+    if(ok){
+      state.stats.correct++;
+      state.stats.streak++;
+
+      if(c.phase==='new' || c.phase==='learn'){
+        c.phase='learn';
+        c.step = (c.step||0) + 1;
+
+        if(c.step >= LEARN_STEPS_MIN.length){
+          c.phase='review';
+          c.reps=1;
+          c.intervalDays=1;
+          c.ef = clamp(c.ef || 2.5, 1.3, 2.7);
+          c.due = t + 86400000;
+        }else{
+          c.due = t + LEARN_STEPS_MIN[c.step]*60000;
+        }
+        return;
       }
-    }
 
-    function showSection(id) {
-      document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
-      if (id === 'quiz') newQuiz();
+      // SM-2 simplificado (qualidade 5)
+      c.ef = clamp((c.ef||2.5) + 0.1, 1.3, 2.7);
+      c.reps = (c.reps||0) + 1;
+      if(c.reps===1) c.intervalDays=1;
+      else if(c.reps===2) c.intervalDays=3;
+      else c.intervalDays = Math.round((c.intervalDays||3) * c.ef);
+      c.intervalDays = clamp(c.intervalDays, 1, 365);
+      c.due = t + c.intervalDays*86400000;
+
+    }else{
+      state.stats.streak = 0;
+      c.phase='learn';
+      c.step=0;
+      c.reps=0;
+      c.intervalDays=0;
+      c.ef = clamp((c.ef||2.5) - 0.2, 1.3, 2.7);
+      c.due = t + LEARN_STEPS_MIN[0]*60000;
     }
-  </script>
+  }
+
+  function persistCard(c){
+    const h = state.deck.hira.findIndex(x=>x.id===c.id);
+    const k = state.deck.kata.findIndex(x=>x.id===c.id);
+    if(h>=0) state.deck.hira[h]=c;
+    if(k>=0) state.deck.kata[k]=c;
+  }
+
+  function next(){
+    const n = pickNext();
+    if(!n){ saveState(state); showDone(); return; }
+    setPrompt(n);
+    saveState(state);
+  }
+
+  function reveal(){ elReveal.classList.add('show'); }
+
+  function submit(){
+    if(!card) return;
+    const ok = correct(elAnswer.value, card);
+    reveal();
+    flash(ok ? 'ok' : 'bad');
+    schedule(card, ok);
+    persistCard(card);
+    saveState(state);
+    setTimeout(next, ok ? 170 : 620);
+  }
+
+  elOk.addEventListener('click', submit);
+  elAnswer.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){ e.preventDefault(); submit(); }
+    if(e.key===' '){ e.preventDefault(); reveal(); if(state.audio && card && state.dir==='k2r') speakKana(card.k); }
+  });
+
+  elSet.addEventListener('change', ()=>{ state.set = elSet.value; saveState(state); next(); });
+  elSwap.addEventListener('click', ()=>{ state.dir = state.dir==='k2r' ? 'r2k' : 'k2r'; elMode.textContent = state.dir==='k2r' ? 'kana→romaji' : 'romaji→kana'; saveState(state); next(); });
+  elAudio.addEventListener('click', ()=>{ state.audio = !state.audio; elAudio.textContent = state.audio ? '🔊' : '🔈'; saveState(state); if(state.audio && card && state.dir==='k2r') speakKana(card.k); });
+  elReset.addEventListener('click', ()=>{ state.deck={ hira: makeDeck(HIRA), kata: makeDeck(KATA) }; state.stats={ reviews:0, correct:0, streak:0 }; saveState(state); next(); });
+
+  next();
+</script>
 </body>
 </html>
